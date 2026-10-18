@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!--
+  product.html — [جديد] صفحة المنتج الكاملة: product.html?id=3
+  فيها: معرض الصور، السعر، الكمية، أضف للسلة، اشترِ الآن (فاتورة)، المفضلة، مشاركة، منتجات مشابهة
+  المنطق في js/product.js
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0A3622">
+<!-- [كما كان] يطبّق الوضع الليلي/النهاري المحفوظ قبل رسم الصفحة لتجنب الوميض -->
+<script>(function(){var t;try{t=JSON.parse(localStorage.getItem("nova_theme"))}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="images/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<title>المنتج | EBRAHIM STORE</title>
+</head>
+<body data-page="product">
+
+<div id="shellTop"></div>
+
+<div class="layout">
+  <aside class="side" id="side"></aside>
+
+  <main class="content">
+    <nav class="crumbs" id="crumbs" aria-label="مسار التنقل"></nav>
+    <div id="pv"></div>
+    <section class="pv-sec" id="simSec" hidden><h2>منتجات مشابهة</h2><div class="grid" id="simGrid"></div></section>
+    <section class="pv-sec" id="recent" hidden><h2>شاهدتها مؤخراً</h2><div class="grid" id="recentGrid"></div></section>
+  </main>
+</div>
+
+<footer id="siteFoot"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/product.js"></script>
+</body>
+</html>

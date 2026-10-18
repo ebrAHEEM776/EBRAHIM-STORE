@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!--
+  index.html — الصفحة الرئيسية
+  [معدّل] صارت الرئيسية للتعريف والعروض فقط، وكل نوع منتجات له صفحة مستقلة (category.html)
+  الشريط العلوي والترويسة والقائمة الجانبية والتذييل تُرسم من js/app.js (لا تعدّلها هنا)
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0A3622">
+<!-- [كما كان] يطبّق الوضع الليلي/النهاري المحفوظ قبل رسم الصفحة لتجنب الوميض -->
+<script>(function(){var t;try{t=JSON.parse(localStorage.getItem("nova_theme"))}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="images/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<title>EBRAHIM STORE | إكسسوارات الهواتف في صبراتة</title>
+<meta name="description" content=" EBRAHIM STORE : غطاء وواقي شاشة وشواحن وكيابل وسماعات وباور بانك. اطلب عبر واتساب واستلم من المتجر أو بالتوصيل.">
+</head>
+<body data-page="home">
+
+<!-- [جديد] مكان الشريط العلوي والترويسة (يملؤه app.js) -->
+<div id="shellTop"></div>
+
+<!-- [جديد] هيكل الصفحة: المحتوى + القائمة الجانبية (أنواع المنتجات) على اليسار -->
+<div class="layout">
+  <aside class="side" id="side"></aside>
+
+  <div class="content">
+
+    <!-- ===== [معدّل] الواجهة الرئيسية: العنوان + اختيار الهاتف + بلاطات الأنواع =====
+         ألوان البلاطات: --c1 و --c2 (كلها درجات أخضر الآن). الصورة: --img (اختيارية)
+         [معدّل] البلاطات صارت روابط حقيقية لصفحات الأنواع -->
+    <section class="hero2">
+      <div class="hero-text">
+        <h1>اختر هاتفك،<br>ونجهّز لك ما يناسبه.</h1>
+        <p>إكسسوارات حماية وشحن وصوت لكل هاتف. أرسل طلبك عبر واتساب في دقيقة، واستلم من المتجر أو بالتوصيل.</p>
+        <div class="finder"><label for="myPhone">أي هاتف تستخدم؟</label><select id="myPhone"><option value="">اختر الموديل</option></select><span id="finderMsg" aria-live="polite"></span></div>
+        <a class="btn" href="category.html">تصفح المنتجات</a>
+      </div>
+      <div class="bento">
+        <a class="tile" href="category.html?cat=charger" style="--img:url(images/tile-charger.jpg);--c1:#15803D;--c2:#052E16"><span class="em">🔌</span><b>اشحن هاتفك</b><small>شواحن وكيابل</small></a>
+        <a class="tile" href="category.html?cat=iphone" style="--img:url(images/tile-iphone.jpg);--c1:#3F6B52;--c2:#0F2A1D"><span class="em">📱</span><b>لآيفون</b><small>أغطية وواقيات</small></a>
+        <a class="tile" href="category.html?cat=samsung" style="--img:url(images/tile-samsung.jpg);--c1:#059669;--c2:#064E3B"><span class="em">📲</span><b>لسامسونج</b><small>أغطية وواقيات</small></a>
+        <a class="tile" href="category.html?cat=audio" style="--img:url(images/tile-audio.jpg);--c1:#65A30D;--c2:#1A2E05"><span class="em">🎧</span><b>السماعات</b><small>سلكية ولاسلكية</small></a>
+      </div>
+    </section>
+
+    <!-- ===== [كما كان] مختارات NOVA (تُحدَّد من featuredIds في config.js) ===== -->
+    <section class="band" id="featured" hidden><h2>مختارات NOVA</h2><div class="strip" id="featGrid"></div></section>
+
+    <!-- ===== [كما كان] تسوق حسب العلامة — [معدّل] كل علامة رابط لصفحتها ===== -->
+    <section class="band"><h2>تسوق حسب العلامة</h2><div class="brands" id="brands"></div></section>
+
+    <!-- ===== [كما كان] العروض الحالية ===== -->
+    <section class="band" id="dealsSec" hidden><h2>عروض حالية</h2><div class="strip" id="dealStrip"></div></section>
+
+    <!-- ===== [كما كان] وصل حديثاً ===== -->
+    <section class="band" id="newSec" hidden><h2>وصل حديثاً</h2><div class="strip" id="newStrip"></div></section>
+
+    <!-- ===== [جديد] نظرة على المنتجات مع زر لصفحة كل المنتجات ===== -->
+    <section class="band" id="allSec"><h2>من منتجاتنا</h2>
+      <div class="grid" id="allGrid"></div>
+      <div class="more-wrap"><a class="btn" href="category.html">عرض كل المنتجات</a></div>
+    </section>
+
+    <!-- ===== [كما كان] شاهدتها مؤخراً ===== -->
+    <section class="band" id="recent" hidden><h2>شاهدتها مؤخراً</h2><div class="grid" id="recentGrid"></div></section>
+
+    <!-- ===== [كما كان] لماذا NOVA (ثلاث ميزات) ===== -->
+    <section class="band"><div class="vp">
+      <div><span>🔎</span><b>اختر حسب هاتفك</b><p>حدّد موديلك لنعرض لك المنتجات المتوافقة معه.</p></div>
+      <div><span>💬</span><b>اطلب عبر واتساب</b><p>رسالة طلب جاهزة، ويؤكد المتجر طلبك معك.</p></div>
+      <div><span>🚚</span><b>استلام أو توصيل</b><p>من المتجر أو توصيل حسب المنطقة، والرسوم تظهر قبل الإرسال.</p></div>
+    </div></section>
+
+    <!-- ===== [كما كان] أدلة سريعة ===== -->
+    <section class="band"><h2>أدلة سريعة</h2>
+      <details><summary>كيف أختار الشاحن؟</summary><p>تأكد أن منفذ الشاحن يطابق الكيبل الذي تستخدمه، وأن قدرته بالواط مناسبة لهاتفك. الهاتف يسحب ما يحتاجه فقط، فاختيار شاحن أقوى من اللازم لا يضره إن كان من منتج جيد.</p></details>
+      <details><summary>كيف أختار الباور بانك؟</summary><p>السعة بالمللي أمبير هي الرقم الأهم، لكن السعة التي تصل فعلاً لهاتفك أقل من المكتوبة عادةً بسبب فقد الطاقة أثناء الشحن. اختر السعة حسب عدد مرات الشحن التي تحتاجها.</p></details>
+      <details><summary>غطاء أم واقي شاشة؟</summary><p>الغطاء يحمي جسم الهاتف وحوافه، والواقي يحمي الشاشة. الأفضل الاثنان معاً، وتأكد من الموديل لأن الأبعاد تختلف من جهاز لآخر.</p></details>
+    </section>
+
+    <!-- ===== [كما كان] آراء العملاء (تظهر فقط إذا أضفت آراء في config.js) ===== -->
+    <section class="band" id="reviews" hidden><h2>آراء العملاء</h2><div class="strip" id="revGrid"></div></section>
+
+    <!-- ===== [كما كان] أسئلة شائعة ===== -->
+    <section class="faq" id="faq"><h2>أسئلة شائعة</h2>
+      <details><summary>كيف أطلب؟</summary><p>أضف المنتجات إلى السلة، أكمل بياناتك، ثم أرسل الطلب عبر واتساب. يُعتبر الطلب مؤكداً بعد رد المتجر عليك.</p></details>
+      <details><summary>ما طرق الدفع؟</summary><p>الدفع نقداً عند الاستلام.</p></details>
+      <details><summary>كيف يُحسب التوصيل؟</summary><p>حسب المنطقة التي تختارها عند إتمام الطلب، وتظهر الرسوم قبل الإرسال. يمكنك أيضاً الاستلام من المتجر.</p></details>
+      <details><summary>كيف أعرف أن المنتج يناسب هاتفي؟</summary><p>اختر موديل هاتفك من قائمة «أي هاتف تستخدم؟»، أو افتح صفحة المنتج لترى الأجهزة المتوافقة.</p></details>
+    </section>
+  </div>
+</div>
+
+<!-- [جديد] مكان التذييل (يملؤه app.js) -->
+<footer id="siteFoot"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<!--
+  tools/images.html — [جديد] أداة تجهيز صور المنتجات (تعمل على جهازك فقط، لا ترفع شيئاً لأي مكان)
+  الاستعمال: افتح هذا الملف بالمتصفح (دبل كليك) ← اسحب صورك ← اربط كل صورة بمنتجها ← «تنزيل ZIP»
+             ← فكّ الضغط وضع الصور داخل مجلد images/ في المتجر ← ارفع المتجر.
+  ماذا تفعل الأداة لكل صورة: تجعلها مربعة 800×800 بخلفية بيضاء (بدون قص المنتج)، وتضغطها
+  تحت 150KB، وتسمّيها p{رقم المنتج}.jpg كما يتوقع المتجر.
+  هذه الصفحة لا تُنشر مع المتجر (مستثناة في firebase.json).
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>أداة صور المنتجات | EBRAHIM STORE</title>
+<style>
+  /* ألوان الأداة (أخضر وأبيض مثل المتجر) */
+  :root{--g:#15803D;--gd:#0A3622;--soft:#E3F4E8;--bg:#F4FAF6;--line:#D9E8DE;--err:#D63B3B;--muted:#5A7266}
+  *{box-sizing:border-box;margin:0}
+  body{font-family:system-ui,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:#10261A;line-height:1.7}
+  header{background:var(--gd);color:#fff;padding:14px 20px}
+  header h1{font-size:1.2rem}
+  main{max-width:1000px;margin:0 auto;padding:16px}
+  .steps{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 18px;margin-bottom:14px}
+  .steps ol{padding-inline-start:20px}
+  #drop{border:3px dashed var(--g);background:var(--soft);border-radius:16px;padding:28px;text-align:center;cursor:pointer;margin-bottom:12px}
+  #drop.over{background:#c9ecd4}
+  #drop b{font-size:1.1rem;color:var(--gd)}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+  .bar label{display:flex;gap:6px;align-items:center}
+  button,.btn{background:var(--g);color:#fff;border:0;border-radius:10px;padding:9px 18px;font:inherit;font-weight:600;cursor:pointer}
+  button.ghost{background:#fff;color:var(--gd);border:1px solid var(--line)}
+  button[disabled]{background:#9DB3A5;cursor:not-allowed}
+  #sum{font-weight:700;color:var(--gd)}
+  h2{font-size:1.05rem;margin:16px 0 8px}
+  #tray{display:flex;flex-wrap:wrap;gap:10px}
+  .tcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;width:170px;display:grid;gap:6px}
+  .tcard img{width:100%;aspect-ratio:1;object-fit:contain;background:#fff;border-radius:8px;border:1px solid var(--line)}
+  .tcard select{width:100%;padding:6px;border-radius:8px;border:1px solid var(--line);font:inherit}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:start;vertical-align:middle}
+  th{background:var(--soft)}
+  td.th img{width:56px;height:56px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff}
+  td.th span{display:inline-grid;place-items:center;width:56px;height:56px;font-size:1.6rem;background:var(--soft);border-radius:8px}
+  .ok{color:var(--g);font-weight:700}.no{color:var(--muted)}
+  .msg{color:var(--err);margin:6px 0;min-height:1.5em}
+  input[type=search]{padding:8px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;min-width:220px}
+</style>
+</head>
+<body>
+<header><h1>🖼️ أداة تجهيز صور المنتجات</h1></header>
+<main>
+  <div class="steps"><b>الخطوات:</b>
+    <ol>
+      <li>اسحب صورك هنا (أو اضغط المربع). لو اسم الصورة رقم المنتج (<bdi>5.jpg</bdi> أو <bdi>p5.jpg</bdi>) تُربط تلقائياً.</li>
+      <li>الصور التي لم تُربط تظهر تحت، اختر لكل واحدة منتجها من القائمة. أو استعمل زر «اختر صورة» بجانب المنتج في الجدول.</li>
+      <li>اضغط «تنزيل ZIP»، فكّ الضغط، وضع الصور داخل مجلد <bdi>images</bdi> في المتجر.</li>
+    </ol>
+  </div>
+
+  <div id="drop"><b>اسحب الصور هنا أو اضغط للاختيار</b><br><small>JPG أو PNG أو WEBP. (صور HEIC من آيفون: حوّلها لـ JPG أولاً أو صوّر بصيغة «الأكثر توافقاً»)</small>
+    <input id="file" type="file" accept="image/*" multiple hidden></div>
+
+  <div class="bar">
+    <label>طريقة الملاءمة:
+      <select id="fit"><option value="contain">كاملة بدون قص (خلفية بيضاء)</option><option value="cover">تعبئة المربع (قد تُقص الأطراف)</option></select></label>
+    <button id="zip" disabled>⬇️ تنزيل ZIP</button>
+    <span id="sum"></span>
+  </div>
+  <p class="msg" id="msg" role="alert"></p>
+
+  <div id="trayWrap" hidden><h2>صور تحتاج ربطاً بمنتج</h2><div id="tray"></div></div>
+
+  <h2>المنتجات</h2>
+  <div class="bar"><input id="find" type="search" placeholder="ابحث باسم المنتج أو رقمه…"><label><input type="checkbox" id="onlyMissing"> بدون صورة فقط</label></div>
+  <table><thead><tr><th>#</th><th>الصورة</th><th>المنتج</th><th>الحالة</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+</main>
+
+<script src="../js/config.js"></script>
+<script>
+/* ┌──────────────────────────────────────────────────────────
+   │ منطق الأداة — كله يعمل داخل متصفحك (لا يرسل الصور لأحد)
+   └────────────────────────────────────────────────────────── */
+const P = window.STORE_CONFIG.products;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const SIZE = 800, MAX_KB = 150;
+const done = new Map();      // id -> {blob, url, kb}
+let pending = [];            // صور لم تُربط بعد: {blob,url,kb,name}
+
+/* تحويل صورة لمربع JPG مضغوط */
+async function toJpeg(file) {
+  const bmp = await createImageBitmap(file);
+  const c = document.createElement('canvas'); c.width = c.height = SIZE;
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, SIZE, SIZE);
+  const k = $('#fit').value === 'cover' ? Math.max(SIZE / bmp.width, SIZE / bmp.height) : Math.min(SIZE / bmp.width, SIZE / bmp.height);
+  const w = bmp.width * k, h = bmp.height * k;
+  x.drawImage(bmp, (SIZE - w) / 2, (SIZE - h) / 2, w, h);
+  let blob;
+  for (const q of [.88, .8, .7, .6, .5, .4]) {
+    blob = await new Promise(r => c.toBlob(r, 'image/jpeg', q));
+    if (blob.size <= MAX_KB * 1024) break;
+  }
+  return { blob, url: URL.createObjectURL(blob), kb: Math.round(blob.size / 1024) };
+}
+
+/* استقبال الملفات */
+async function handle(files, forceId) {
+  $('#msg').textContent = '';
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) continue;
+    let r;
+    try { r = await toJpeg(f); }
+    catch { $('#msg').textContent = `تعذّر قراءة «${f.name}». إن كانت HEIC فحوّلها إلى JPG أولاً.`; continue; }
+    const m = f.name.match(/^p?(\d{1,3})(?:\D.*)?\.\w+$/i);
+    const id = forceId || (m && P.some(p => p.id === +m[1]) ? +m[1] : 0);
+    if (id) assign(id, r); else pending.push({ ...r, name: f.name });
+  }
+  paint();
+}
+function assign(id, r) { const old = done.get(id); if (old) URL.revokeObjectURL(old.url); done.set(id, r); }
+
+/* رسم الواجهة */
+function paint() {
+  $('#trayWrap').hidden = !pending.length;
+  $('#tray').innerHTML = pending.map((t, i) => `<div class="tcard"><img src="${t.url}" alt=""><small>${esc(t.name)} — ${t.kb}KB</small>
+    <select data-i="${i}"><option value="">اختر المنتج…</option>${P.filter(p => !done.has(p.id)).map(p => `<option value="${p.id}">#${p.id} ${esc(p.name)}</option>`).join('')}</select>
+    <button class="ghost" data-rm="${i}">حذف</button></div>`).join('');
+  const q = $('#find').value.trim().toLowerCase(), miss = $('#onlyMissing').checked;
+  $('#rows').innerHTML = P.filter(p => (!q || String(p.id) === q || p.name.toLowerCase().includes(q)) && (!miss || !done.has(p.id))).map(p => {
+    const d = done.get(p.id);
+    return `<tr><td>${p.id}</td><td class="th">${d ? `<img src="${d.url}" alt="">` : `<span>${p.emoji || '📦'}</span>`}</td><td>${esc(p.name)}</td>
+      <td>${d ? `<span class="ok">✓ جاهزة (${d.kb}KB)</span>` : '<span class="no">بدون صورة</span>'}</td>
+      <td><button class="ghost" data-pick="${p.id}">${d ? 'تغيير' : 'اختر صورة'}</button>${d ? ` <button class="ghost" data-del="${p.id}">حذف</button>` : ''}</td></tr>`;
+  }).join('');
+  $('#sum').textContent = `الصور الجاهزة: ${done.size} من ${P.length}`;
+  $('#zip').disabled = !done.size;
+}
+
+/* الأحداث */
+const file = $('#file'), drop = $('#drop');
+drop.onclick = () => { file.dataset.id = ''; file.click(); };
+file.onchange = async () => { await handle([...file.files], +file.dataset.id || 0); file.value = ''; };
+['dragover', 'dragenter'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', ev => handle([...ev.dataTransfer.files]));
+$('#tray').onchange = e => {
+  const i = +e.target.dataset.i, id = +e.target.value; if (!id) return;
+  const [t] = pending.splice(i, 1); assign(id, t); paint();
+};
+$('#tray').onclick = e => { const i = e.target.dataset.rm; if (i !== undefined) { pending.splice(+i, 1); paint(); } };
+$('#rows').onclick = e => {
+  const pk = e.target.dataset.pick, dl = e.target.dataset.del;
+  if (pk) { file.dataset.id = pk; file.multiple = false; file.click(); file.multiple = true; }
+  if (dl) { URL.revokeObjectURL(done.get(+dl).url); done.delete(+dl); paint(); }
+};
+$('#find').oninput = $('#onlyMissing').onchange = paint;
+
+/* ┌──────────────────────────────────────────────────────────
+   │ إنشاء ملف ZIP بدون مكتبات (تخزين بدون ضغط لأن JPG مضغوط أصلاً)
+   └────────────────────────────────────────────────────────── */
+const crcT = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = u8 => { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = crcT[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+async function makeZip(entries) {          // entries: [{name, data:Uint8Array}]
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  const now = new Date(), dt = ((now.getFullYear() - 1980) << 9 | (now.getMonth() + 1) << 5 | now.getDate()), tm = (now.getHours() << 11 | now.getMinutes() << 5 | now.getSeconds() >> 1);
+  for (const { name, data } of entries) {
+    const nb = enc.encode(name), crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, tm, true); lh.setUint16(12, dt, true); lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, nb.length, true); lh.setUint16(28, 0, true);
+    parts.push(lh.buffer, nb, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, tm, true); ch.setUint16(14, dt, true); ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, nb.length, true);
+    ch.setUint32(42, off, true); central.push(ch.buffer, nb);
+    off += 30 + nb.length + data.length;
+  }
+  const csize = central.reduce((s, b) => s + b.byteLength, 0), end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true); end.setUint32(12, csize, true); end.setUint32(16, off, true);
+  return new Blob([...parts, ...central, end.buffer], { type: 'application/zip' });
+}
+$('#zip').onclick = async () => {
+  const entries = [];
+  for (const [id, d] of [...done].sort((a, b) => a[0] - b[0])) entries.push({ name: `images/p${id}.jpg`, data: new Uint8Array(await d.blob.arrayBuffer()) });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(await makeZip(entries)); a.download = 'product-images.zip'; a.click();
+};
+paint();
+</script>
+</body>
+</html>
